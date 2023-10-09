@@ -140,11 +140,6 @@ class MemberRepositoryTest {
         System.out.println("aaa1 = " + aaa1);
     }
 
-    @Test
-    public void expample() {
-
-    }
-
 
 
 
