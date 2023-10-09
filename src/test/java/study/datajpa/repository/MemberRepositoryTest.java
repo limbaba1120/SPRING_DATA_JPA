@@ -4,6 +4,9 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.dto.MemberDto;
@@ -19,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
-@Rollback(value = false)
+@Rollback(value = true)
 class MemberRepositoryTest {
 
     @Autowired
@@ -38,6 +41,7 @@ class MemberRepositoryTest {
         assertThat(findMember.getUsername()).isEqualTo(member.getUsername());
         assertThat(findMember).isEqualTo(member);
     }
+
     @Test
     public void basicCRUD() {
         Member member1 = new Member("member1");
@@ -66,6 +70,7 @@ class MemberRepositoryTest {
         long deletedcount = memberRepository.count();
         assertThat(deletedcount).isEqualTo(0);
     }
+
     @Test
     public void findByUsernameAndAgeGreaterThen() {
         Member member1 = new Member("AAA", 10);
@@ -89,6 +94,7 @@ class MemberRepositoryTest {
         List<Member> result = memberRepository.findUser("AAA", 10);
         assertThat(result.get(0)).isEqualTo(member1);
     }
+
     @Test
     public void findUsernameList() {
         Member member1 = new Member("AAA", 10);
@@ -102,6 +108,7 @@ class MemberRepositoryTest {
             System.out.println("s= " + s);
         }
     }
+
     @Test
     public void findMemberDto() {
         Team teamA = new Team("teamA");
@@ -116,6 +123,7 @@ class MemberRepositoryTest {
             System.out.println("dto = " + dto);
         }
     }
+
     @Test
     public void findByNames() {
         Member member1 = new Member("AAA", 10);
@@ -140,7 +148,31 @@ class MemberRepositoryTest {
         System.out.println("aaa1 = " + aaa1);
     }
 
+    @Test
+    public void paging() {
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
 
 
+        int age = 10;
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
 
+        //when
+        Page<Member> page = memberRepository.findByAge(age, pageRequest);
+
+        //then
+        List<Member> content = page.getContent();
+        long totalElements = page.getTotalElements();
+
+        assertThat(content.size()).isEqualTo(3);
+        assertThat(page.getTotalElements()).isEqualTo(5);
+        assertThat(page.getNumber()).isEqualTo(0);
+        assertThat(page.getTotalPages()).isEqualTo(2);
+        assertThat(page.isFirst()).isTrue();
+        assertThat(page.hasNext()).isTrue();
+    }
 }
