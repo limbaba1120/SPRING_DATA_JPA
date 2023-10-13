@@ -14,3 +14,24 @@ import javax.persistence.Id;
 import java.time.LocalDateTime;
 
 
+@Entity
+@EntityListeners(AuditingEntityListener.class)
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Item implements Persistable<String> {
+
+    @Id
+    private String id;
+
+    @CreatedDate
+    private LocalDateTime createdDate;
+
+    public Item(String id) {
+        this.id = id;
+    }
+
+    @Override
+    public boolean isNew() {
+        return createdDate == null;
+    }
+}
